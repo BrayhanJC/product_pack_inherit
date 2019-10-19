@@ -148,50 +148,90 @@ class SaleOrderInherit(models.Model):
 
 							self.write({'price_unit': list_price + self.price_unit})
 
+
+
+
+	def return_data_products(self):
+
+		"""
+			Funcion que permite retonar todos los productos de la linea auxiliar de packs,
+			con su respectivo id, cantidad y precio unitario
+		"""
+
+		products = []
+
+		if self.pack_aux_ids:
+
+			for x in self.pack_aux_ids:
+
+				vals = {
+				'product_id' : x.product_id.id,
+				'product_uom_qty': x.product_qty,
+				'price_unit': x.product_qty * x.product_id.list_price
+				}
+
+				products.append(vals)
+
+		return products
+
+
+
+	def search_product_pack_line(self, product_id, products):
+
+		"""
+			Funcion que permite retornar los valores del producto a buscar
+			x -> Contiene el valor como id producto, cantidad y precio unitario
+			0 -> No se encontro el producto
+		"""
+
+		if products:
+			for x in products:
+
+				if x['product_id'] == product_id:
+					return x
+
+		return 0
+
+
+	def update_order_line(self):
+
+		order_id = self.env['sale.order'].search([('id', '=', self.order_id.id)])
+
+		if order_id:
+
+			products = self.return_data_products()
+
+			for x in order_id.order_line:
+
+				search_product = self.search_product_pack_line(x.product_id.id, products)
+
+				if search_product != 0:
+					_logger.info('si entro')
+					vals = {
+					'product_uom_qty': search_product['product_uom_qty'],
+					
+					}
+					x.write(vals)
+
+
+			price_unit_pack = 0
+
+			for x in products:
+				price_unit_pack += x['price_unit']
+
+			self.price_unit = price_unit_pack
+
+			_logger.info(price_unit_pack)
+
+
 	def update_order_line_(self):
 
-		data = []
-
-		if self.pack_aux_ids and self.product_id:
-
-			data_product = self.return_data_pack_aux()
-			data_product_pack = self.return_product_pack()
-
-			data_product_pack_qty = []
-
-			for product_pack in data_product_pack:
-
-				for product_data in data_product:
-
-
-					if product_pack['product_id'] == product_data['product_id']:
-
-
-						_logger.info('La cantidad de data_order es: %s y la cantidad de data_pack es: %s ' %(product_pack['product_qty'] , product_data['product_qty']))
-						product_quantity = 0
-
-						#si hay mas cantidades de ese producto a pedir
-						if product_pack['product_qty'] < product_data['product_qty']:
-
-							product_quantity =   product_data['product_qty'] - product_pack['product_qty'] 
-
-						#si hay menos cantidades de ese producto a pedir
-						if product_pack['product_qty'] > product_data['product_qty']:
-
-							
-							product_quantity = product_data['product_qty'] - product_pack['product_qty']
+		self.update_order_line()
 
 
 
-						vals = {
-								'product_pack_id': self.product_id.id,
-								'product_id': product_data['product_id'],
-								'product_qty': product_quantity
-								}
-						data.append(vals)
 
-			_logger.info(data)
 
-			self.return_data_update(data)
+
 
 SaleOrderInherit()
