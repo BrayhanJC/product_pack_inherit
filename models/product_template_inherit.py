@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    
+#
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
@@ -18,7 +18,7 @@
 #    Correo: brayhanjaramillo@hotmail.com
 #
 #    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.     
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -32,7 +32,7 @@ from odoo.addons import decimal_precision as dp
 
 
 class ProductTemplateInherit(models.Model):
-	
+
 	_inherit = 'product.template'
 
 	def calculate_list_price_pack(self, pack_line_ids, list_price, i):
@@ -57,7 +57,7 @@ class ProductTemplateInherit(models.Model):
 
 		for x in product_pack_ids:
 			if x.pack_line_ids:
-	
+
 				list_price = 0
 				list_price = self.calculate_list_price_pack(x.pack_line_ids, 0, len(x.pack_line_ids)-1)
 				x.write({'list_price': list_price})
@@ -75,16 +75,8 @@ class ProductTemplateInherit(models.Model):
 				x.list_price = list_price
 
 
-		work_order_ids = self.env['maintenance.request'].search([('maintenance_work_order_id', '!=', False)])
-
-		_logger.info(work_order_ids)
 	@api.multi
 	def button_update_pack(self):
-
 		self.update_all_product_pack()
-
-
-
-
 
 ProductTemplateInherit()

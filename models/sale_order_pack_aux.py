@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    
+#
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
@@ -18,7 +18,7 @@
 #    Correo: brayhanjaramillo@hotmail.com
 #
 #    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.     
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -28,13 +28,13 @@ import odoo.addons.decimal_precision as dp
 
 
 class SaleOrderPack(models.Model):
-	_name = 'sale.order_pack_aux'
+    _name = 'sale.order_pack_aux'
 
-	sale_order_line_id = fields.Many2one('sale.order.line', string="Sale Order")
-	product_pack_id = fields.Many2one('product.product', string="Product Pack", domain= "[('pack', '=', True)]")
-	product_pack_qty = fields.Float(string="Cantidad Pack")
-	product_id = fields.Many2one('product.product', string="Product", domain= "[('pack', '=', False)]")
-	product_qty = fields.Float(string="Cantidad Producto")
-	product_discount = fields.Integer(string="Descuento")
+    sale_order_line_id = fields.Many2one('sale.order.line', string="Sale Order")
+    product_pack_id = fields.Many2one('product.product', string="Product Pack", domain= "[('pack', '=', True)]")
+    product_pack_qty = fields.Float(string="Cantidad Pack")
+    product_id = fields.Many2one('product.product', string="Product")
+    product_qty = fields.Float(string="Cantidad Producto")
+    product_discount = fields.Integer(string="Descuento")
 
 SaleOrderPack()

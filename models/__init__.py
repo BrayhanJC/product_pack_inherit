@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    
+#
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
@@ -18,7 +18,7 @@
 #    Correo: brayhanjaramillo@hotmail.com
 #
 #    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.     
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -26,3 +26,4 @@ from . import sale_order_pack_aux
 from . import sale_order_line_inherit
 from . import sale_order_inherit
 from . import product_template_inherit
+from . import product_pack_line_inherit

@@ -8,7 +8,7 @@
 		<field name="arch" type="xml">
 
 			<xpath expr="//field[@name='invoice_lines']" position="after">
-  
+
 				<label for="pack_aux_ids"/>
 				<field name="pack_aux_ids">
 					<tree string="Pack Product" editable="bottom">
@@ -17,11 +17,11 @@
 						<field name="product_id"/>
 						<field name="product_qty"/>
 						<field name="product_discount" invisible="1"/>
-					</tree>                                          
+					</tree>
 				</field>
 				
 				<button name="update_order_line_" string="Actualizar" type="object" class="btn-primary"/>
-
+				<field name="is_pack"/>
 			</xpath>
 		</field>
 	</record>

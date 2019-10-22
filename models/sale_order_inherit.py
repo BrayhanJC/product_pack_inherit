@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    
+#
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
@@ -18,7 +18,7 @@
 #    Correo: brayhanjaramillo@hotmail.com
 #
 #    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.     
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -32,7 +32,7 @@ from odoo.addons import decimal_precision as dp
 
 
 class SaleOrderInherit(models.Model):
-	
+
 	_inherit = 'sale.order'
 
 
@@ -80,6 +80,7 @@ class SaleOrderInherit(models.Model):
 					'product_uom': line.product_uom_id.id,
 					'pack_aux_ids': data_pack,
 					'customer_lead': self._get_customer_lead(line.product_id.product_tmpl_id),
+					'is_pack': False,
 				})
 				if self.pricelist_id:
 					data.update(self.env['sale.order.line']._get_purchase_price(self.pricelist_id, line.product_id, line.product_uom_id, fields.Date.context_today(self)))
@@ -103,165 +104,6 @@ class SaleOrderInherit(models.Model):
 		if template.note:
 			self.note = template.note
 
-
-
-	def data_pack_complete(self, order_line):
-
-		data_pack = []
-		product_alternative = []
-		data_product_pack = []
-
-
-		contador_pack = 1
-		
-
-		for x in order_line:
-
-			contador_pack_line = 1
-			if x.product_id:
-
-				if x.product_id.pack:
-
-					_logger.info('agregando pack')
-					_logger.info(x.product_id.name)
-
-					vals = {
-
-					'product_id': x.product_id.id,
-					'name': x.product_id.name,
-					'product_uom_qty': x.product_uom_qty,
-					'product_uom': x.product_id.uom_id.name,
-					'price_unit': x.price_unit,
-					'tax_id': x.tax_id,
-					'sequence_ref': str(contador_pack),
-					'price_subtotal': x.price_unit,
-					'price_total': x.price_unit,
-					'amount': x.price_unit * x.product_uom_qty,
-					'product_ids': [x.product_id.id for x in x.pack_aux_ids],
-					'is_pack': 1,
-
-
-					}
-					data_pack.append(vals)
-
-					for product_pack in x.pack_aux_ids:
-
-						vals = {
-						'pack_id': x.product_id.id,
-						'product_id': product_pack.product_id.id,
-						'name': product_pack.product_id.name,
-						'product_uom_qty': product_pack.product_qty,
-						'product_uom': product_pack.product_id.uom_id.name,
-						'price_unit': product_pack.product_id.list_price,
-						'tax_id': x.tax_id,
-						'sequence_ref': str(contador_pack) + '.' + str(contador_pack_line),
-						'price_subtotal': product_pack.product_id.list_price,
-						'price_total': product_pack.product_id.list_price,
-						'amount': product_pack.product_id.list_price * product_pack.product_qty,
-						'is_pack': 0
-
-						}
-
-						data_product_pack.append(vals)
-
-		data_result = []
-
-		for pack in data_pack:
-
-			data_result.append(pack)
-
-			for data_product in data_product_pack:
-
-				if data_product['pack_id'] == pack['product_id']:
-
-					data_result.append(data_product)
-
-
-		for x in product_alternative:
-			data_result.append(x)
-
-
-		for x in data_result:
-			_logger.info(x)
-			_logger.info('.')
-
-		return data_result
-
-	@api.multi
-	def return_pack_line(self, line, sale_order, sequence_number):
-
-		data = []
-		flag= False
-		if line:
-
-			_logger.info([x.product_id.id for x in line.product_id.pack_line_ids])
-			_logger.info([x.product_id.id for x in line.pack_aux_ids])
-			_logger.info([x.product_id.id for x in sale_order])
-			
-			pack_line_ids = line.pack_aux_ids
-
-			product_ids = [x.product_id.id for x in pack_line_ids]
-
-			contador = 1
-
-
-
-			for value in sale_order:
-				if value.product_id.id in product_ids:
-
-					print('si esta el celular'+ value.product_id.name)
-					vals={
-							'display_type': value.display_type,
-							'name': value.name,
-							'product_uom_qty': value.product_uom_qty,
-							'product_uom': value.product_uom.name,
-							'price_unit': value.price_unit,
-							'discount': value.discount,
-							'tax_id': value.tax_id,
-							'sequence_ref': str(sequence_number) + '.' + str(contador),
-							#', '.join(map(lambda x: (value.description or value.name), line.tax_id)),
-							'price_subtotal': value.price_subtotal,
-							'price_total': value.price_total,
-							'amount': value.price_total
-					}
-					data.append(vals)
-					contador+=1
-				else:
-					flag=True
-					break
-
-
-		if flag:
-
-
-			contador_aux = 1
-
-			for x in pack_line_ids:
-
-				vals = {
-					'display_type': value.display_type,
-					'name': x.product_id.name,
-					'product_uom_qty': x.product_qty,
-					'product_uom': x.product_id.uom_id.name,
-					'price_unit': x.product_id.list_price,
-					#'discount': x.discount,
-					'tax_id': line.tax_id,
-					'sequence_ref': str(sequence_number) + '.' + str(contador_aux),
-					#', '.join(map(lambda x: (x.description or x.name), line.tax_id)),
-					'price_subtotal': x.product_qty * x.product_id.list_price,
-					'price_total': x.product_qty * x.product_id.list_price,
-					'amount': x.product_qty * x.product_id.list_price
-				}
-				data.append(vals)
-
-				contador_aux+=1
-						
-
-
-
-		return data
-
-
 	@api.multi
 	def action_confirm(self):
 
@@ -270,7 +112,7 @@ class SaleOrderInherit(models.Model):
 		data_aux = []
 		if self.order_line:
 			for x in self.order_line:
-				
+
 				if x.product_id.pack:
 
 					if x.product_id.pack_price_type in ['none_detailed_assited_price', 'none_detailed_totaliced_price']:
@@ -278,8 +120,8 @@ class SaleOrderInherit(models.Model):
 						if len(x.pack_aux_ids) > 0:
 							#_logger.info('los productos del pack son:')
 							for value in x.pack_aux_ids:
-								data_product.append( (0, 0, {'product_id': value.product_id.id, 'product_uom_qty': value.product_qty, 'price_unit':0}) )
-					
+								data_product.append( (0, 0, {'product_id': value.product_id.id, 'product_uom_qty': value.product_qty, 'price_unit':0, 'is_pack': False}) )
+
 				else:
 					pass
 

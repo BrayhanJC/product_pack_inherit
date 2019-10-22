@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    
+#
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
@@ -18,7 +18,7 @@
 #    Correo: brayhanjaramillo@hotmail.com
 #
 #    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.     
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -32,14 +32,15 @@ from odoo.addons import decimal_precision as dp
 
 
 class SaleOrderInherit(models.Model):
-	
+
 	_inherit = 'sale.order.line'
 
+	is_pack = fields.Boolean(string="Is pack?", default=True)
 	def return_product_pack(self):
 
 		"""
 		Funcion que retorna la informacion de los productos que hacen parte del pack
-		
+
 		"""
 
 		result = []
@@ -72,13 +73,13 @@ class SaleOrderInherit(models.Model):
 
 		"""
 		Funcion que retorna la informacion de los productos que estan en el pack order line
-		
+
 		"""
 
 		data= []
 
 		if self.pack_aux_ids:
-			
+
 			for x in self.pack_aux_ids:
 
 				vals = {
@@ -113,42 +114,6 @@ class SaleOrderInherit(models.Model):
 		if len(data) > 0:
 			self.pack_aux_ids = None
 			self.pack_aux_ids = result
-
-	def return_data_update(self, vals):
-		if vals:
-
-
-			if self.pack_aux_ids and self.product_id:
-
-				if self.product_id.pack_line_ids:
-
-					for data_product in vals:
-
-						if self.product_id.id == data_product['product_pack_id']:
-
-							list_price = 0
-
-							for pack_line in self.product_id.pack_line_ids:
-
-								if pack_line.product_id.id == data_product['product_id']:
-
-									product_list_price = pack_line.product_id.list_price
-
-									_logger.info('-----')
-									if data_product['product_qty'] > 0:
-
-										list_price += (product_list_price * data_product['product_qty'])
-									
-									if data_product['product_qty'] < 0:
-
-										list_price -=  product_list_price
-
-									_logger.info('El producto %s tiene un valor de %s y la cantidad a multiplicar es: %s y el list_price es: %s' %(pack_line.product_id.name, pack_line.product_id.list_price, data_product['product_qty'], list_price))
-								
-
-							self.write({'price_unit': list_price + self.price_unit})
-
-
 
 
 	def return_data_products(self):
@@ -195,6 +160,9 @@ class SaleOrderInherit(models.Model):
 
 	def update_order_line(self):
 
+		"""
+			Funcion que permite actualizar la cantidad del componente o pack en la orden de linea
+		"""
 		order_id = self.env['sale.order'].search([('id', '=', self.order_id.id)])
 
 		if order_id:
@@ -206,13 +174,13 @@ class SaleOrderInherit(models.Model):
 				search_product = self.search_product_pack_line(x.product_id.id, products)
 
 				if search_product != 0:
-					_logger.info('si entro')
+
 					vals = {
+
 					'product_uom_qty': search_product['product_uom_qty'],
-					
+
 					}
 					x.write(vals)
-
 
 			price_unit_pack = 0
 
@@ -221,11 +189,11 @@ class SaleOrderInherit(models.Model):
 
 			self.price_unit = price_unit_pack
 
-			_logger.info(price_unit_pack)
-
 
 	def update_order_line_(self):
-
+		"""
+			Funcion que permite accionar el boton Actualizar en la linea de la orden
+		"""
 		self.update_order_line()
 
 
