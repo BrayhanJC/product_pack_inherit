@@ -46,7 +46,7 @@ class ProductTemplateInherit(models.Model):
 			list_price += self.calculate_list_price_pack(pack_line, list_price, len(pack_line)-1)
 
 		else:
-			list_price = pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity
+			list_price = (pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) + ((pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) * (pack_line_ids[i].discount)/100)
 
 		return list_price + self.calculate_list_price_pack(pack_line_ids, list_price, i=i-1)
 
