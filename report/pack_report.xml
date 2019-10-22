@@ -173,13 +173,13 @@
 									</tr>
 
 									<tr>
-										<td><strong>Recargo (%)</strong></td>
+										<td><strong>AIU (%)</strong></td>
 										<td class="text-right">
 											<span t-field="doc.amount_surcharge"/>
 										</td>
 									</tr>
 									<tr>
-										<td><strong>Recargo </strong></td>
+										<td><strong>AIU </strong></td>
 										<td class="text-right">
 											<span t-field="doc.amount_surcharge_vale" t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
 										</td>
