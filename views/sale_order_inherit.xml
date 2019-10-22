@@ -21,7 +21,7 @@
 				</field>
 				
 				<button name="update_order_line_" string="Actualizar" type="object" class="btn-primary"/>
-				<field name="is_pack"/>
+				
 			</xpath>
 		</field>
 	</record>

@@ -143,6 +143,7 @@
 												</t>
 										</tr>
 
+<!--
 										<t t-if="current_section and (line_last or doc.order_line[line_index+1].display_type == 'line_section')">
 												<tr class="is-subtotal text-right">
 														<td colspan="99">
@@ -154,6 +155,7 @@
 														</td>
 												</tr>
 										</t>
+									-->
 									</t>
 								</t>
 							</tbody>
@@ -267,7 +269,7 @@
 
 							<tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
 									<t t-if="not line.display_type">
-											<td> 
+											<td class="text-left"> 
 												<span t-esc="pack_main"/> 
 											</td>
 											<td><span t-field="line.name"/></td>
@@ -314,7 +316,7 @@
 
 									<tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
 											<t t-if="not line.display_type">
-													<td> 
+													<td class="text-right"> 
 														<span style="color:gray !important;" t-esc="pack_main"/> . <span style="color:gray !important;" t-esc="line_pack"/>
 													</td>
 													<td><span style="color:gray !important;" t-field="pack_line.product_id.name"/></td>
@@ -340,6 +342,8 @@
 
 									</tr>
 
+
+<!--
 									<t t-if="current_section and (line_last or doc.order_line[line_index+1].display_type == 'line_section')">
 											<tr class="is-subtotal text-right">
 													<td colspan="99">
@@ -348,6 +352,10 @@
 													</td>
 											</tr>
 									</t>
+
+-->
+
+
 									<t t-set="line_pack" t-value="line_pack+1"/>
 								</t>
 							</t>
