@@ -37,18 +37,22 @@ class ProductTemplateInherit(models.Model):
 
 	def calculate_list_price_pack(self, pack_line_ids, list_price, i):
 
+		product_price = list_price
+
 		if i == -1:
 			return 0
 
 		if pack_line_ids[i].product_id.pack:
 
 			pack_line = pack_line_ids[i].product_id.pack_line_ids
-			list_price += self.calculate_list_price_pack(pack_line, list_price, len(pack_line)-1)
+
+
+			product_price = self.calculate_list_price_pack(pack_line, list_price, len(pack_line)-1)
 
 		else:
-			list_price = (pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) + ((pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) * (pack_line_ids[i].discount)/100)
-
-		return list_price + self.calculate_list_price_pack(pack_line_ids, list_price, i=i-1)
+			product_price = (pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) + ( (pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) * (pack_line_ids[i].discount/100) )
+			#print('el producto ' + pack_line_ids[i].product_id.name + ' el valor ' + str(product_price) + ' la cantidad ' + str(pack_line_ids[i].quantity))
+		return product_price + self.calculate_list_price_pack(pack_line_ids, product_price, i=i-1)
 
 	@api.model
 	def update_all_product_pack(self):
