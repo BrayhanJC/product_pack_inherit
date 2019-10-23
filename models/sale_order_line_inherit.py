@@ -36,6 +36,7 @@ class SaleOrderInherit(models.Model):
 	_inherit = 'sale.order.line'
 
 	is_pack = fields.Boolean(string="Is pack?", default=True)
+
 	def return_product_pack(self):
 
 		"""
@@ -158,11 +159,23 @@ class SaleOrderInherit(models.Model):
 		return 0
 
 
+
 	def update_order_line(self):
 
 		"""
 			Funcion que permite actualizar la cantidad del componente o pack en la orden de linea
 		"""
+		print('dsfsdfsdfsdfsdf#######')
+
+		sale_order_id = None
+
+		for x in self:
+			sale_order_id = x.order_id.id
+
+		print('################')
+	
+		print('################')
+
 		order_id = self.env['sale.order'].search([('id', '=', self.order_id.id)])
 
 		if order_id:
@@ -195,7 +208,6 @@ class SaleOrderInherit(models.Model):
 			Funcion que permite accionar el boton Actualizar en la linea de la orden
 		"""
 		self.update_order_line()
-
 
 
 

@@ -144,4 +144,20 @@ class SaleOrderInherit(models.Model):
 		return True
 
 
+
+	def update_order_line_(self):
+		"""
+			Funcion que permite accionar el boton Actualizar en la linea de la orden
+		"""
+
+		for x in self.order_line:
+			if x.is_pack:
+				price = 0
+				for value in x.pack_aux_ids:
+					price += value.product_id.list_price * value.product_qty
+				x.price_unit = price
+
+		return self.env['sale.order.line'].search([('order_id', '=', self.id)])
+
+
 SaleOrderInherit()

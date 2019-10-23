@@ -20,9 +20,16 @@
 					</tree>
 				</field>
 				
-				<button name="update_order_line_" string="Actualizar" type="object" class="btn-primary"/>
+				<button name="update_order_line_" string="Actualizar Packs" type="object" class="btn-primary"/>
 				
 			</xpath>
+
+			<field name="order_line" position="before">
+				<button name="update_order_line_" string="Actualizar Packs" type="object" class="btn-primary"/>
+				<br/>
+			</field>
+
+
 		</field>
 	</record>
 
