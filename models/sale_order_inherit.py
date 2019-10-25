@@ -34,8 +34,6 @@ from odoo.addons import decimal_precision as dp
 class SaleOrderInherit(models.Model):
 
 	_inherit = 'sale.order'
-
-
 	@api.onchange('sale_order_template_id')
 	def onchange_sale_order_template_id(self):
 		if not self.sale_order_template_id:
@@ -59,8 +57,9 @@ class SaleOrderInherit(models.Model):
 					price = line.price_unit
 
 				data_pack = []
+				is_pack = False
 				if line.product_id.pack:
-					print('es un pack')
+					
 					for x in line.product_id.pack_line_ids:
 						vals={
 							'product_pack_id': line.product_id.id,
@@ -68,9 +67,7 @@ class SaleOrderInherit(models.Model):
 							'product_qty': x.quantity
 						}
 						data_pack.append((0, 0, vals))
-
-				else:
-					print('no es un pack')
+					is_pack = True
 
 				data.update({
 					'price_unit': price,
@@ -79,8 +76,8 @@ class SaleOrderInherit(models.Model):
 					'product_id': line.product_id.id,
 					'product_uom': line.product_uom_id.id,
 					'pack_aux_ids': data_pack,
+					'pack': is_pack,
 					'customer_lead': self._get_customer_lead(line.product_id.product_tmpl_id),
-					'is_pack': False,
 				})
 				if self.pricelist_id:
 					data.update(self.env['sale.order.line']._get_purchase_price(self.pricelist_id, line.product_id, line.product_uom_id, fields.Date.context_today(self)))
@@ -88,6 +85,14 @@ class SaleOrderInherit(models.Model):
 
 		self.order_line = order_lines
 		self.order_line._compute_tax_id()
+
+		for data_product in self.order_line:
+			print(data_product)
+
+			if data_product.product_id.pack:
+				data_product.is_pack = True
+			else:
+				data_product.is_pack = False
 
 		option_lines = []
 		for option in template.sale_order_template_option_ids:
@@ -103,6 +108,7 @@ class SaleOrderInherit(models.Model):
 
 		if template.note:
 			self.note = template.note
+
 
 	@api.multi
 	def action_confirm(self):
@@ -149,13 +155,18 @@ class SaleOrderInherit(models.Model):
 		"""
 			Funcion que permite accionar el boton Actualizar en la linea de la orden
 		"""
-
-		for x in self.order_line:
-			if x.is_pack:
-				price = 0
-				for value in x.pack_aux_ids:
-					price += value.product_id.list_price * value.product_qty
-				x.price_unit = price
+		for value in self:
+			for x in value.order_line:
+				price_unit = x.product_id.list_price
+				x.write({'price_unit': price_unit})
+				
+				if x.is_pack:
+					
+					price = 0
+					if x.product_id.pack:
+						for value in x.pack_aux_ids:
+							price += value.product_id.list_price * value.product_qty
+						x.write({'price_unit': price})
 
 		return self.env['sale.order.line'].search([('order_id', '=', self.id)])
 
