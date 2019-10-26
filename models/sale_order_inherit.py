@@ -156,6 +156,7 @@ class SaleOrderInherit(models.Model):
 			Funcion que permite accionar el boton Actualizar en la linea de la orden
 		"""
 		for value in self:
+
 			for x in value.order_line:
 				price_unit = x.product_id.list_price
 				x.write({'price_unit': price_unit})
@@ -164,9 +165,26 @@ class SaleOrderInherit(models.Model):
 					
 					price = 0
 					if x.product_id.pack:
-						for value in x.pack_aux_ids:
-							price += value.product_id.list_price * value.product_qty
-						x.write({'price_unit': price})
+						if x.pack_aux_ids:
+							for value_product in x.pack_aux_ids:
+								price += value_product.product_id.list_price * value_product.product_qty
+							x.write({'price_unit': price})
+						else:
+
+							data_pack = []
+
+							if x.product_id.pack_line_ids:
+								price_pack = 0
+								for pack_product in x.product_id.pack_line_ids:
+									vals={
+										'product_pack_id': x.product_id.id,
+										'product_id': pack_product.product_id.id,
+										'product_qty': pack_product.quantity
+									}
+									price_pack += pack_product.product_id.list_price * pack_product.quantity
+
+									data_pack.append((0, 0, vals))
+								x.write({'pack_aux_ids': data_pack, 'price_unit': price_pack})
 
 		return self.env['sale.order.line'].search([('order_id', '=', self.id)])
 
