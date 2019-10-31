@@ -128,6 +128,7 @@
 																<span t-field="line.price_subtotal" groups="account.group_show_line_subtotals_tax_excluded"/>
 																<span t-field="line.price_total" groups="account.group_show_line_subtotals_tax_included"/>
 														</td>
+														<t t-set="pack_main" t-value="pack_main+1"/>
 												</t>
 												<t t-if="line.display_type == 'line_section'">
 														<td colspan="99">
@@ -156,7 +157,7 @@
 												</tr>
 										</t>
 									-->
-									<t t-set="pack_main" t-value="pack_main+1"/>
+									
 									</t>
 								</t>
 							</tbody>
@@ -266,15 +267,6 @@
 
 				
 					<t t-set="p_line" t-value="1"/>
-
-
-                        
-
-    
-
-
-
-
 
 					<t t-foreach="doc.order_line" t-as="line">
 
@@ -452,6 +444,11 @@
 
 
 
+
+
+			
+									</t>
+
 										<t t-if="line.display_type == 'line_section'">
 												<td colspan="99">
 													<span t-field="line.name"/>
@@ -468,28 +465,9 @@
 										<t t-set="current_section" t-value="line"/>
 										<t t-set="current_subtotal" t-value="0"/>
 
-			
-									</t>
-
-
-
 							</tr>
 
 
-							<t t-if="line.display_type not in ['line_section', 'line_note'] ">
-
-<!--
-								<t t-if="line.is_pack == False">
-									
-								</t>
-
-								<t t-if="line.is_pack">
-									
-									
-								</t>
-
-								-->
-							</t>
 
 
 					</t>
