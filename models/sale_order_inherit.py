@@ -110,28 +110,59 @@ class SaleOrderInherit(models.Model):
 			self.note = template.note
 
 
+	@api.constrains('product_id', 'product_uom_qty')
+	def expand_pack_line(self):
+		detailed_packs = ['components_price', 'totalice_price', 'fixed_price']
+		# if we are using update_pricelist or checking out on ecommerce we
+		# only want to update prices
+		do_not_expand = self._context.get('update_prices') or \
+			self._context.get('update_pricelist', False)
+
+		if self.order_id.state in ['sale']:
+			detailed_packs.append('none_detailed_assited_price')
+			detailed_packs.append('none_detailed_totaliced_price')
+
+			for subline in self.product_id.pack_line_ids:
+				vals = subline.get_sale_order_line_vals(
+					self, self.order_id)
+				vals['sequence'] = self.sequence
+				existing_subline = self.search([
+					('product_id', '=', subline.product_id.id),
+					('pack_parent_line_id', '=', self.id),
+				], limit=1)
+				# if subline already exists we update, if not we create
+				if existing_subline:
+					if do_not_expand:
+						vals.pop('product_uom_qty')
+					existing_subline.write(vals)
+				elif not do_not_expand:
+					self.create(vals)      
+
+		if (
+				self.state == 'draft' and
+				self.product_id.pack and
+				self.pack_type in detailed_packs):
+
+
+			for subline in self.product_id.pack_line_ids:
+				vals = subline.get_sale_order_line_vals(
+					self, self.order_id)
+				vals['sequence'] = self.sequence
+				existing_subline = self.search([
+					('product_id', '=', subline.product_id.id),
+					('pack_parent_line_id', '=', self.id),
+				], limit=1)
+				
+				if existing_subline:
+					if do_not_expand:
+						vals.pop('product_uom_qty')
+					existing_subline.write(vals)
+				elif not do_not_expand:
+					self.create(vals)
+
+
 	@api.multi
 	def action_confirm(self):
-
-		_logger.info('confirmando la venta')
-		data_product = []
-		data_aux = []
-		if self.order_line:
-			for x in self.order_line:
-
-				if x.product_id.pack:
-
-					if x.product_id.pack_price_type in ['none_detailed_assited_price', 'none_detailed_totaliced_price']:
-
-						if len(x.pack_aux_ids) > 0:
-							#_logger.info('los productos del pack son:')
-							for value in x.pack_aux_ids:
-								data_product.append( (0, 0, {'product_id': value.product_id.id, 'product_uom_qty': value.product_qty, 'price_unit':0, 'is_pack': False}) )
-
-				else:
-					pass
-
-		self.order_line = data_product
 
 		if self._get_forbidden_state_confirm() & set(self.mapped('state')):
 			raise UserError(_(
@@ -147,6 +178,25 @@ class SaleOrderInherit(models.Model):
 		self._action_confirm()
 		if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
 			self.action_done()
+
+		_logger.info('confirmando la venta')
+		data_product = []
+		data_aux = []
+		if self.order_line:
+			for x in self.order_line:
+
+				if x.product_id.pack:
+
+					if x.product_id.pack_price_type in ['none_detailed_assited_price', 'none_detailed_totaliced_price']:
+
+						if len(x.pack_aux_ids) > 0:
+							x.expand_pack_line()
+							pass
+				else:
+					pass
+
+		self.order_line = data_product
+
 		return True
 
 
@@ -157,11 +207,15 @@ class SaleOrderInherit(models.Model):
 		"""
 		for value in self:
 
+			qty_pack = 1
+
 			for x in value.order_line:
 				price_unit = x.product_id.list_price
 				x.write({'price_unit': price_unit})
 				
 				if x.is_pack:
+
+					qty_pack = x.product_uom_qty
 					
 					price = 0
 					if x.product_id.pack:
