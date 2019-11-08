@@ -265,7 +265,8 @@
 
 					
 
-				
+					<t t-set="qty_product" t-value="1"/>
+
 					<t t-set="p_line" t-value="1"/>
 
 					<t t-foreach="doc.order_line" t-as="line">
@@ -378,6 +379,8 @@
 
 										<t t-if="line.is_pack">
 
+											<t t-set="qty_product" t-value="line.product_uom_qty"/>
+
 											<t t-set="p_main" t-value="p_main+1"/>
 											<td class="text-left"> 
 												<span t-esc="p_main"/> 
@@ -410,6 +413,8 @@
 										</t>
 										<t t-else="">
 
+											
+
 											<td class="text-right"> 
 												<span style="color:gray !important;" t-esc="p_main"/>.<span style="color:gray !important;" t-esc="p_line"/> 
 											</td>	
@@ -419,12 +424,12 @@
 											</td>
 
 											<td class="text-right">
-													<span style="color:gray !important;" t-field="line.product_uom_qty"/>
+													<span style="color:gray !important;" t-esc="line.product_uom_qty * qty_product"/>
 													<span style="color:gray !important;" t-field="line.product_uom" groups="uom.group_uom"/>
 											</td>
 
 											<td class="text-right" style="color:gray !important;">
-												<span t-field="line.price_unit"/>
+												<span t-esc="line.product_id.list_price"/>
 											</td>
 
 											<td t-if="display_discount" class="text-right" groups="sale.group_discount_per_so_line">
