@@ -190,8 +190,11 @@ class SaleOrderInherit(models.Model):
 					if x.product_id.pack_price_type in ['none_detailed_assited_price', 'none_detailed_totaliced_price']:
 
 						if len(x.pack_aux_ids) > 0:
+							#_logger.info('los productos del pack son:')
+							#for value in x.pack_aux_ids:
+							#	data_product.append( (0, 0, {'product_id': value.product_id.id, 'product_uom_qty': value.product_qty, 'price_unit':0, 'is_pack': False}) )
 							x.expand_pack_line()
-							pass
+						
 				else:
 					pass
 
