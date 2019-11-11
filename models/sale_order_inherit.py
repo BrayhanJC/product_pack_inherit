@@ -34,6 +34,7 @@ from odoo.addons import decimal_precision as dp
 class SaleOrderInherit(models.Model):
 
 	_inherit = 'sale.order'
+	
 	@api.onchange('sale_order_template_id')
 	def onchange_sale_order_template_id(self):
 		if not self.sale_order_template_id:
@@ -161,46 +162,6 @@ class SaleOrderInherit(models.Model):
 					self.create(vals)
 
 
-	@api.multi
-	def action_confirm(self):
-
-		if self._get_forbidden_state_confirm() & set(self.mapped('state')):
-			raise UserError(_(
-				'It is not allowed to confirm an order in the following states: %s'
-			) % (', '.join(self._get_forbidden_state_confirm())))
-
-		for order in self.filtered(lambda order: order.partner_id not in order.message_partner_ids):
-			order.message_subscribe([order.partner_id.id])
-		self.write({
-			'state': 'sale',
-			'confirmation_date': fields.Datetime.now()
-		})
-		self._action_confirm()
-		if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
-			self.action_done()
-
-		_logger.info('confirmando la venta')
-		data_product = []
-		data_aux = []
-		if self.order_line:
-			for x in self.order_line:
-
-				if x.product_id.pack:
-
-					if x.product_id.pack_price_type in ['none_detailed_assited_price', 'none_detailed_totaliced_price']:
-
-						if len(x.pack_aux_ids) > 0:
-							#_logger.info('los productos del pack son:')
-							#for value in x.pack_aux_ids:
-							#	data_product.append( (0, 0, {'product_id': value.product_id.id, 'product_uom_qty': value.product_qty, 'price_unit':0, 'is_pack': False}) )
-							x.expand_pack_line()
-						
-				else:
-					pass
-
-		self.order_line = data_product
-
-		return True
 
 
 

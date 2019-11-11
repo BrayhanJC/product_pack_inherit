@@ -37,6 +37,28 @@ class SaleOrderInherit(models.Model):
 
 	is_pack = fields.Boolean(string="Is pack?", default=True)
 
+
+	@api.depends('product_uom_qty')
+	@api.onchange('product_uom_qty')
+	def onchange_pack_product_uom_qty(self):
+		"""
+			Funcion que permite modificar la cantidad de los componentes
+		"""
+		if self.product_uom_qty:
+			if self.product_id.pack:
+				if self.pack_aux_ids:
+					update_pack = []
+					for x in self.pack_aux_ids:
+						value_qty = 1
+						for pack in self.product_id.pack_line_ids:
+
+							if x.product_id.id == pack.product_id.id:
+								value_qty = pack.quantity
+
+						update_pack.append((1, x.id, {'product_qty': value_qty * self.product_uom_qty}))
+
+					self.pack_aux_ids = update_pack
+
 	def return_product_pack(self):
 
 		"""

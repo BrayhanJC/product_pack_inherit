@@ -18,7 +18,7 @@ class ProductPackLineInherit(models.Model):
             'product_id': self.product_id.id or False,
             'pack_parent_line_id': line.id,
             'pack_depth': line.pack_depth + 1,
-            # 'sequence': sequence,
+            #'sequence': sequence,
             'company_id': order.company_id.id,
         }
         sol = line.new(line_vals)
