@@ -21,11 +21,34 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+from odoo import models, fields, api
+from datetime import datetime
 
-from . import sale_order_pack_aux
-from . import sale_order_line_inherit
-from . import sale_order_inherit
-from . import product_template_inherit
-from . import product_pack_line_inherit
-from . import stock_rule_inherit
-from . import purchase_order_inherit
+class PurchaseOrderInherit(models.Model):
+	_inherit = 'purchase.order'
+	_description = "Display Purchase Order Form View"
+
+	@api.model
+	def default_get(self, default_fields):
+		if "active_model" in self._context and self._context.get('active_model') == 'sale.order':
+			model_order = self.env['sale.order']
+			order = model_order.browse(self._context['active_id'])
+			order_lines = []
+			for order_line in order.order_line:
+				if order_line.product_id.pack:
+					if order_line.pack_aux_ids:
+
+						order_lines = model_order.generate_order_line(order_line.pack_aux_ids, [], len(order_line.pack_aux_ids)-1, order_line.product_uom_qty, order, False, False)
+						
+			contextual_self = self.with_context({
+				'default_origin': order.name,
+				'default_order_id': order.id,
+				'default_order_line': order_lines
+			})
+			return super(PurchaseOrderInherit, contextual_self).default_get(default_fields)
+		return super(PurchaseOrderInherit, self).default_get(default_fields)
+
+
+PurchaseOrderInherit()
+
+

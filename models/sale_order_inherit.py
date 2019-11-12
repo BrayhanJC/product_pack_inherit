@@ -35,6 +35,45 @@ class SaleOrderInherit(models.Model):
 
 	_inherit = 'sale.order'
 	
+	def generate_order_line(self, pack_aux_ids, order_lines, flag, order_qty, order, is_pack, validation):
+
+		"""
+			Funcion recursiva para calcular los productos que van a ir en el request y purchase
+		"""
+
+		if flag == -1:
+			return order_lines
+
+		if pack_aux_ids[flag].product_id.pack:
+
+			pack_line = pack_aux_ids[flag].product_id.pack_line_ids
+			self.generate_order_line(pack_line, order_lines, len(pack_line)-1, order_qty, order, True, validation)
+		else:
+
+			product = pack_aux_ids[flag]
+
+			is_pack_aux = is_pack
+
+			if product.product_id.purchase_request == validation:
+
+				vals = {'product_id': product.product_id.id,
+						'name': product.product_id.name,
+						'date_planned': datetime.now(),
+						'product_qty': order_qty * (product.quantity if is_pack else product.product_qty),
+						'price_unit': product.product_id.list_price,
+						'product_uom': product.product_id.uom_id.id,
+						'product_uom_po': product.product_id.uom_po_id.id,
+						'currency_id': order.currency_id.id,
+						'sale_line_id': order.order_line.id,
+						'taxes_id': order.order_line.tax_id
+						}
+				
+				order_lines.append(vals)
+		flag=flag-1
+		return self.generate_order_line(pack_aux_ids, order_lines, flag, order_qty, order, is_pack, validation)
+
+
+
 	@api.onchange('sale_order_template_id')
 	def onchange_sale_order_template_id(self):
 		if not self.sale_order_template_id:

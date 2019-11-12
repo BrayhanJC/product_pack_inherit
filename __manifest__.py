@@ -33,7 +33,7 @@
     'images': [
     ],
     'depends': [
-        'product_pack', 'sale', 'set_sequence_number', 'surcharge_value'
+        'product_pack', 'sale', 'set_sequence_number', 'surcharge_value', 'purchase_request', 'quick_purchase_order_from_sale_order'
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -42,8 +42,6 @@
         'views/sale_order_inherit.xml',
         'views/sale_order_pack_aux_view.xml',
         'views/product_template_inherit.xml'
-
-
     ],
 
     'installable': True,
