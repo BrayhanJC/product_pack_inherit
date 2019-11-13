@@ -64,6 +64,9 @@ class SaleOrderInherit(models.Model):
 				
 			vals_order_lines.append(vals)
 
+		print("#################")
+		print(vals_order_lines)
+
 		return vals_order_lines
 
 
