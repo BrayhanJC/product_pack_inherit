@@ -210,7 +210,7 @@ class SaleOrderInherit(models.Model):
 			self.action_done()
 
 		_logger.info('confirmando la venta')
-		print('-------------------------------------------------------')
+		_logger.info('-------------------------------------------------------')
 
 		return True
 

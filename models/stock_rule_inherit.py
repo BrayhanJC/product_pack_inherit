@@ -41,6 +41,8 @@ class SaleOrderInherit(models.Model):
 		order_lines = []
 		model_order = self.env['sale.order']
 
+		vals_order_lines = []
+
 		if product_id.pack:
 			if values['origin']:
 				sale_order_id = model_order.search([('name', '=', values['origin'])])
@@ -48,26 +50,40 @@ class SaleOrderInherit(models.Model):
 				for order_line in sale_order_id.order_line:
 					order_lines = model_order.generate_order_line(order_line.pack_aux_ids, [], len(order_line.pack_aux_ids)-1, procurement_uom_po_qty, sale_order_id, False, True)
 		
-		vals_order_lines = []
+		
 
-		for x in order_lines:
-			vals =  {
-				'product_id': x['product_id'],
-				'name': x['name'],
-				'date_required': 'date_planned' in values and values['date_planned'] or fields.Datetime.now(),
-				'product_uom_id': x['product_uom_po'],
-				'product_qty': procurement_uom_po_qty,
-				'request_id': request_id.id,
-				'move_dest_ids': [(4, x.id) for x in values.get('move_dest_ids', [])],
-				'orderpoint_id': values.get('orderpoint_id', False) and values.get('orderpoint_id').id,
-				}
-				
-			vals_order_lines.append(vals)
+				for x in order_lines:
+					vals =  {
+						'product_id': x['product_id'],
+						'name': x['name'],
+						'date_required': 'date_planned' in values and values['date_planned'] or fields.Datetime.now(),
+						'product_uom_id': x['product_uom_po'],
+						'product_qty': procurement_uom_po_qty,
+						'request_id': request_id.id,
+						'move_dest_ids': [(4, x.id) for x in values.get('move_dest_ids', [])],
+						'orderpoint_id': values.get('orderpoint_id', False) and values.get('orderpoint_id').id,
+						}
+						
+					vals_order_lines.append(vals)
 
-		print("#################")
-		print(vals_order_lines)
+				return vals_order_lines
 
-		return vals_order_lines
+				_logger.info("#################")
+				_logger.info("Estamos dede un paquete")
+				_logger.info(vals_order_lines)
+		_logger.info("----------")
+		_logger.info("Estamos por fuera de un paquete")
+		return {
+			'product_id': product_id.id,
+			'name': product_id.name,
+			'date_required': 'date_planned' in values
+			and values['date_planned'] or fields.Datetime.now(),
+			'product_uom_id': product_id.uom_po_id.id,
+			'product_qty': procurement_uom_po_qty,
+			'request_id': request_id.id,
+			'move_dest_ids': [(4, x.id) for x in values.get('move_dest_ids', [])],
+			'orderpoint_id': values.get('orderpoint_id', False) and values.get('orderpoint_id').id,
+		}
 
 
 
