@@ -150,60 +150,6 @@ class SaleOrderInherit(models.Model):
 			self.note = template.note
 
 
-	@api.constrains('product_id', 'product_uom_qty')
-	def expand_pack_line(self):
-		detailed_packs = ['components_price', 'totalice_price', 'fixed_price']
-		# if we are using update_pricelist or checking out on ecommerce we
-		# only want to update prices
-		do_not_expand = self._context.get('update_prices') or \
-			self._context.get('update_pricelist', False)
-
-		if self.order_id.state in ['sale']:
-			detailed_packs.append('none_detailed_assited_price')
-			detailed_packs.append('none_detailed_totaliced_price')
-
-			for subline in self.product_id.pack_line_ids:
-				vals = subline.get_sale_order_line_vals(
-					self, self.order_id)
-				vals['sequence'] = self.sequence
-				existing_subline = self.search([
-					('product_id', '=', subline.product_id.id),
-					('pack_parent_line_id', '=', self.id),
-				], limit=1)
-				# if subline already exists we update, if not we create
-				if existing_subline:
-					if do_not_expand:
-						vals.pop('product_uom_qty')
-					existing_subline.write(vals)
-				elif not do_not_expand:
-					self.create(vals)      
-
-		if (
-				self.state == 'draft' and
-				self.product_id.pack and
-				self.pack_type in detailed_packs):
-
-
-			for subline in self.product_id.pack_line_ids:
-				vals = subline.get_sale_order_line_vals(
-					self, self.order_id)
-				vals['sequence'] = self.sequence
-				existing_subline = self.search([
-					('product_id', '=', subline.product_id.id),
-					('pack_parent_line_id', '=', self.id),
-				], limit=1)
-				
-				if existing_subline:
-					if do_not_expand:
-						vals.pop('product_uom_qty')
-					existing_subline.write(vals)
-				elif not do_not_expand:
-					self.create(vals)
-
-
-
-
-
 	def update_order_line_(self):
 		"""
 			Funcion que permite accionar el boton Actualizar en la linea de la orden
