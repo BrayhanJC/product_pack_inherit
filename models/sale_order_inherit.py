@@ -193,7 +193,24 @@ class SaleOrderInherit(models.Model):
 
 	@api.multi
 	def action_confirm(self):
+		_logger.info('confirmando la venta')
+		data_product = []
+		data_aux = []
+		if self.order_line:
+			for x in self.order_line:
 
+				if x.product_id.pack:
+
+					if x.product_id.pack_price_type in ['none_detailed_assited_price', 'none_detailed_totaliced_price']:
+
+						if len(x.pack_aux_ids) > 0:
+							#_logger.info('los productos del pack son:')
+							#for value in x.pack_aux_ids:
+							#	data_product.append( (0, 0, {'product_id': value.product_id.id, 'product_uom_qty': value.product_qty, 'price_unit':0, 'is_pack': False}) )
+							x.expand_pack_line()
+
+				else:
+					pass
 		if self._get_forbidden_state_confirm() & set(self.mapped('state')):
 			raise UserError(_(
 				'It is not allowed to confirm an order in the following states: %s'
@@ -209,8 +226,9 @@ class SaleOrderInherit(models.Model):
 		if self.env['ir.config_parameter'].sudo().get_param('sale.auto_done_setting'):
 			self.action_done()
 
-		_logger.info('confirmando la venta')
-		_logger.info('-------------------------------------------------------')
+
+
+	
 
 		return True
 
