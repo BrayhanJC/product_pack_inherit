@@ -35,6 +35,6 @@ class SaleOrderPack(models.Model):
     product_pack_qty = fields.Float(string="Cantidad Pack")
     product_id = fields.Many2one('product.product', string="Product")
     product_qty = fields.Float(string="Cantidad Producto")
-    product_discount = fields.Integer(string="Descuento")
+    product_discount = fields.Float(string="Descuento")
 
 SaleOrderPack()

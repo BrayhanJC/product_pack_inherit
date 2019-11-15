@@ -104,7 +104,8 @@ class SaleOrderInherit(models.Model):
 						vals={
 							'product_pack_id': line.product_id.id,
 							'product_id': x.product_id.id,
-							'product_qty': x.quantity
+							'product_qty': x.quantity,
+							'product_discount': x.discount
 						}
 						data_pack.append((0, 0, vals))
 					is_pack = True
@@ -149,11 +150,12 @@ class SaleOrderInherit(models.Model):
 		if template.note:
 			self.note = template.note
 
-
+	@api.multi
 	def update_order_line_(self):
 		"""
 			Funcion que permite accionar el boton Actualizar en la linea de la orden
 		"""
+		print('presionando')
 		for value in self:
 
 			qty_pack = 1
@@ -170,7 +172,8 @@ class SaleOrderInherit(models.Model):
 					if x.product_id.pack:
 						if x.pack_aux_ids:
 							for value_product in x.pack_aux_ids:
-								price += value_product.product_id.list_price * value_product.product_qty
+								price += (value_product.product_id.list_price * value_product.product_qty) + ((value_product.product_id.list_price * value_product.product_qty) * (value_product.product_discount/100))
+								
 							x.write({'price_unit': price})
 						else:
 
@@ -182,10 +185,11 @@ class SaleOrderInherit(models.Model):
 									vals={
 										'product_pack_id': x.product_id.id,
 										'product_id': pack_product.product_id.id,
-										'product_qty': pack_product.quantity
+										'product_qty': pack_product.quantity,
+										'product_discount': pack_product.discount
 									}
-									price_pack += pack_product.product_id.list_price * pack_product.quantity
-
+									price_pack += (pack_product.product_id.list_price * pack_product.quantity) + ((pack_product.product_id.list_price * pack_product.quantity) * (pack_product.discount))
+									print(price_pack)
 									data_pack.append((0, 0, vals))
 								x.write({'pack_aux_ids': data_pack, 'price_unit': price_pack})
 

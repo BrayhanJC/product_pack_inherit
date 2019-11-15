@@ -56,11 +56,13 @@ class SaleOrderInherit(models.Model):
 
 					product = data_product.product_id.id
 					quantity_product = data_product.quantity
+					product_discount = data_product.discount
 
 					vals = {
 					'product_pack_id': self.product_id.id,
 					'product_id': product,
-					'product_qty': quantity_product
+					'product_qty': quantity_product,
+					'product_discount': product_discount
 					}
 
 					result.append(vals)
@@ -86,7 +88,8 @@ class SaleOrderInherit(models.Model):
 				vals = {
 							'product_pack_id': x.product_pack_id.id,
 							'product_id': x.product_id.id,
-							'product_qty': x.product_qty
+							'product_qty': x.product_qty,
+							'product_discount': x.product_discount
 							}
 
 				data.append(vals)
@@ -133,7 +136,8 @@ class SaleOrderInherit(models.Model):
 				vals = {
 				'product_id' : x.product_id.id,
 				'product_uom_qty': x.product_qty,
-				'price_unit': x.product_qty * x.product_id.list_price
+				'product_discount': x.product_discount,
+				'price_unit': (x.product_qty * x.product_id.list_price) + ((x.product_qty * x.product_id.list_price) * (x.product_discount/100)),
 				}
 
 				products.append(vals)
