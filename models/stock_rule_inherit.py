@@ -43,15 +43,25 @@ class SaleOrderInherit(models.Model):
 
 		vals_order_lines = []
 
+
+		_logger.info('############################')
+		_logger.info('entrando en la funcon _prepare_purchase_request_line')
+
 		if product_id.pack:
+			_logger.info('estamos validando que es un paquete')
+
 			if values['origin']:
-				sale_order_id = model_order.search([('name', '=', values['origin'])])
+
+				_logger.info('estamos capturando el origin de la venta')
+
+				sale_order_id = model_order.sudo().search([('name', '=', values['origin'])])
+				_logger.info(sale_order_id)
 
 				for order_line in sale_order_id.order_line:
 					order_lines = model_order.generate_order_line(order_line.pack_aux_ids, [], len(order_line.pack_aux_ids)-1, procurement_uom_po_qty, sale_order_id, False, True)
-		
-		
 
+
+				_logger.info('esto es lo que va a crear')
 				for x in order_lines:
 					vals =  {
 						'product_id': x['product_id'],
@@ -66,18 +76,18 @@ class SaleOrderInherit(models.Model):
 						
 					vals_order_lines.append(vals)
 
+				print(vals_order_lines)
+
 				return vals_order_lines
 
 				_logger.info("#################")
-				_logger.info("Estamos dede un paquete")
-				_logger.info(vals_order_lines)
+
 		_logger.info("----------")
 		_logger.info("Estamos por fuera de un paquete")
 		return {
 			'product_id': product_id.id,
 			'name': product_id.name,
-			'date_required': 'date_planned' in values
-			and values['date_planned'] or fields.Datetime.now(),
+			'date_required': 'date_planned' in values and values['date_planned'] or fields.Datetime.now(),
 			'product_uom_id': product_id.uom_po_id.id,
 			'product_qty': procurement_uom_po_qty,
 			'request_id': request_id.id,
@@ -101,7 +111,7 @@ class SaleOrderInherit(models.Model):
 		if domain in cache:
 			pr = cache[domain]
 		elif domain:
-			pr = self.env['purchase.request'].search([dom for dom in domain])
+			pr = self.env['purchase.request'].sudo().search([dom for dom in domain])
 			pr = pr[0] if pr else False
 			cache[domain] = pr
 		if not pr:
@@ -121,7 +131,11 @@ class SaleOrderInherit(models.Model):
 		values['origin']=origin
 		request_line_data = self._prepare_purchase_request_line(pr, product_id, product_qty, product_uom, values)
 		#creanto request line
+
+		_logger.info('Finamente creamos todo')
+		_logger.info(request_line_data)
 		for x in request_line_data:
 			purchase_request_line_model.create(x)
+
 
 SaleOrderInherit()
