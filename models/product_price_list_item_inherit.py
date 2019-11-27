@@ -22,11 +22,22 @@
 #
 ##############################################################################
 
-from . import sale_order_pack_aux
-from . import sale_order_line_inherit
-from . import sale_order_inherit
-from . import product_template_inherit
-from . import product_pack_line_inherit
-from . import stock_rule_inherit
-#from . import purchase_order_inherit
-from . import product_price_list_item_inherit
+from odoo import api, fields, models, _
+import time
+from datetime import datetime, timedelta, date
+import logging
+_logger = logging.getLogger(__name__)
+from odoo import modules
+from math import sqrt
+import statistics as stats
+import math
+
+class ProductPriceListItem(models.Model):
+
+	_inherit = 'product.pricelist.item'
+
+
+	update_price = fields.Boolean(string="Actualizar Precio")
+
+	
+ProductPriceListItem()

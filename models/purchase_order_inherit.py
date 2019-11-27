@@ -38,7 +38,7 @@ class PurchaseOrderInherit(models.Model):
 				if order_line.product_id.pack:
 					if order_line.pack_aux_ids:
 
-						order_lines = model_order.generate_order_line(order_line.pack_aux_ids, [], len(order_line.pack_aux_ids)-1, order_line.product_uom_qty, order, False, False)
+						order_lines = model_order.generate_order_line(order_line.pack_aux_ids, [], len(order_line.pack_aux_ids)-1, order_line.product_uom_qty, order, False, False, order_line.id)
 						
 			contextual_self = self.with_context({
 				'default_origin': order.name,

@@ -30,12 +30,139 @@ _logger = logging.getLogger(__name__)
 from odoo import modules
 from odoo.addons import decimal_precision as dp
 
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, float_compare
+from odoo.exceptions import UserError
+
 
 class SaleOrderInherit(models.Model):
 
 	_inherit = 'sale.order.line'
 
 	is_pack = fields.Boolean(string="Is pack?", default=True)
+
+	@api.multi
+	def _prepare_procurement_values_pack_line(self, order_line_id, company_id, date_planned, route_ids, warehouse_id, partner_id, group_id=False):
+		""" Prepare specific key for moves or other components that will be created from a stock rule
+		comming from a sale order line. This method could be override in order to add other custom key that could
+		be used in move/po creation.
+		"""
+		values = {}
+		values.update({
+			'company_id': company_id,
+			'group_id': group_id,
+			'sale_line_id': order_line_id,
+			'date_planned': date_planned,
+			'route_ids': route_ids,
+			'warehouse_id': warehouse_id or False,
+			'partner_id': partner_id,
+			'group_id': group_id
+		#	'partner_id': self.order_id.partner_shipping_id.id,
+		})
+
+		print(values)
+
+		return values
+
+
+	@api.multi
+	def _action_launch_stock_rule(self):
+		"""
+		Launch procurement group run method with required/custom fields genrated by a
+		sale order line. procurement group will launch '_run_pull', '_run_buy' or '_run_manufacture'
+		depending on the sale order line product rule.
+		"""
+		precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+		errors = []
+		order_lines = []
+		model_order = self.env['sale.order']
+
+
+
+		sale_order_id = 0
+		for line in self:
+
+			sale_order_id = line.order_id
+			
+
+		if sale_order_id:
+			for line in sale_order_id.order_line:
+				if line.product_id.pack:
+					print('producto: ' + str(line.product_id.name))
+					model_order._generate_order_line(line.pack_aux_ids, order_lines, len(line.pack_aux_ids)-1, line.product_uom_qty, line.order_id, False, True, line.id)
+
+	#	print('los prductos son')
+	#	print(order_lines)
+
+		if order_lines:
+			for x in order_lines:
+				values = self._prepare_procurement_values_pack_line(x['sale_line_id'], self.env['res.company'].search([('id', '=', x['company_id'])]),  x['date_planned'], self.env['stock.location.route'].search([('id', '=', x['route_ids'])]), self.env['stock.warehouse'].search([('id', '=', x['warehouse_id'])]), x['partner_id'], x['group_id'])
+			
+			#	print(str(line.product_id.name) + ' - ' + str(product_qty) + ' - ' + str(procurement_uom) + ' - ' + str(line.order_id.partner_shipping_id.property_stock_customer) + ' - ' + str(line.name) + ' - ' + str(line.order_id.name) + ' - ' + str(values))
+				#print(str(x['name']) + ' - ' + str(x['product_qty']) + ' - ' + str(self.env['uom.uom'].search([('id', '=', x['product_uom'])])) + ' - ' + str(x['stock_location']) + ' - ' + str(x['name']) + ' - ' + str(x['order_name']) + ' - ' + str(values))
+
+				try:
+					#pass
+					self.env['procurement.group'].run(self.env['product.template'].search([('id', '=', x['product_id'])]), x['product_qty'], self.env['uom.uom'].search([('id', '=', x['product_uom'])]), x['stock_location'], x['name'], x['order_name'], values)
+			
+				except UserError as error:
+					errors.append(error.name)
+	
+		for line in self:
+
+
+
+			if line.state != 'sale' or not line.product_id.type in ('consu','product'):
+				continue
+			qty = line._get_qty_procurement()
+			if float_compare(qty, line.product_uom_qty, precision_digits=precision) >= 0:
+				continue
+
+			group_id = line.order_id.procurement_group_id
+			if not group_id:
+				group_id = self.env['procurement.group'].create({
+					'name': line.order_id.name, 'move_type': line.order_id.picking_policy,
+					'sale_id': line.order_id.id,
+					'partner_id': line.order_id.partner_shipping_id.id,
+				})
+				line.order_id.procurement_group_id = group_id
+			else:
+				# In case the procurement group is already created and the order was
+				# cancelled, we need to update certain values of the group.
+				updated_vals = {}
+				if group_id.partner_id != line.order_id.partner_shipping_id:
+					updated_vals.update({'partner_id': line.order_id.partner_shipping_id.id})
+				if group_id.move_type != line.order_id.picking_policy:
+					updated_vals.update({'move_type': line.order_id.picking_policy})
+				if updated_vals:
+					group_id.write(updated_vals)
+
+			values = line._prepare_procurement_values(group_id=group_id)
+			product_qty = line.product_uom_qty - qty
+
+			procurement_uom = line.product_uom
+			quant_uom = line.product_id.uom_id
+			get_param = self.env['ir.config_parameter'].sudo().get_param
+			if procurement_uom.id != quant_uom.id and get_param('stock.propagate_uom') != '1':
+				product_qty = line.product_uom._compute_quantity(product_qty, quant_uom, rounding_method='HALF-UP')
+				procurement_uom = quant_uom
+
+			try:
+	
+
+				#print(str(line.product_id.name) + ' - ' + str(product_qty) + ' - ' + str(procurement_uom) + ' - ' + str(line.order_id.partner_shipping_id.property_stock_customer) + ' - ' + str(line.name) + ' - ' + str(line.order_id.name) + ' - ' + str(values))
+
+
+				self.env['procurement.group'].run(line.product_id, product_qty, procurement_uom, line.order_id.partner_shipping_id.property_stock_customer, line.name, line.order_id.name, values)
+			
+
+
+			except UserError as error:
+				errors.append(error.name)
+		if errors:
+			raise UserError('\n'.join(errors))
+		return True
+
+
 
 	def return_product_pack(self):
 

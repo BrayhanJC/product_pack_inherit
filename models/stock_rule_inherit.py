@@ -34,34 +34,30 @@ from odoo.addons import decimal_precision as dp
 class SaleOrderInherit(models.Model):
 
 	_inherit = 'stock.rule'
-	
+
+
 	@api.model
 	def _prepare_purchase_request_line(self, request_id, product_id, product_qty, product_uom, values):
 		procurement_uom_po_qty = product_uom._compute_quantity(product_qty, product_id.uom_po_id)
+		
 		order_lines = []
 		model_order = self.env['sale.order']
 
 		vals_order_lines = []
 
-
-		_logger.info('############################')
-		_logger.info('entrando en la funcon _prepare_purchase_request_line')
-
 		if product_id.pack:
-			_logger.info('estamos validando que es un paquete')
 
 			if values['origin']:
 
-				_logger.info('estamos capturando el origin de la venta')
+
 
 				sale_order_id = model_order.sudo().search([('name', '=', values['origin'])])
-				_logger.info(sale_order_id)
+	
 
 				for order_line in sale_order_id.order_line:
-					order_lines = model_order.generate_order_line(order_line.pack_aux_ids, [], len(order_line.pack_aux_ids)-1, procurement_uom_po_qty, sale_order_id, False, True)
+					if product_id.id == order_line.product_id.id:
+						model_order.generate_order_line(order_line.pack_aux_ids, order_lines, len(order_line.pack_aux_ids)-1, procurement_uom_po_qty, sale_order_id, False, True, order_line.id)
 
-
-				_logger.info('esto es lo que va a crear')
 				for x in order_lines:
 					vals =  {
 						'product_id': x['product_id'],
@@ -74,17 +70,12 @@ class SaleOrderInherit(models.Model):
 						'orderpoint_id': values.get('orderpoint_id', False) and values.get('orderpoint_id').id,
 						}
 						
-					vals_order_lines.append(vals)
 
 				print(vals_order_lines)
 
 				return vals_order_lines
 
-				_logger.info("#################")
-
-		_logger.info("----------")
-		_logger.info("Estamos por fuera de un paquete")
-		return {
+		vals={
 			'product_id': product_id.id,
 			'name': product_id.name,
 			'date_required': 'date_planned' in values and values['date_planned'] or fields.Datetime.now(),
@@ -95,14 +86,24 @@ class SaleOrderInherit(models.Model):
 			'orderpoint_id': values.get('orderpoint_id', False) and values.get('orderpoint_id').id,
 		}
 
+		final_vals = []
+		final_vals.append(vals)
+		return [{
+			'product_id': product_id.id,
+			'name': product_id.name,
+			'date_required': 'date_planned' in values and values['date_planned'] or fields.Datetime.now(),
+			'product_uom_id': product_id.uom_po_id.id,
+			'product_qty': procurement_uom_po_qty,
+			'request_id': request_id.id,
+			'move_dest_ids': [(4, x.id) for x in values.get('move_dest_ids', [])],
+			'orderpoint_id': values.get('orderpoint_id', False) and values.get('orderpoint_id').id,
+		}]
+
 
 
 	@api.multi
-	def create_purchase_request(self, product_id, product_qty, product_uom,
-								origin, values):
-		"""
-		Create a purchase request containing procurement order product.
-		"""
+	def create_purchase_request(self, product_id, product_qty, product_uom, origin, values):
+
 		purchase_request_model = self.env['purchase.request']
 		purchase_request_line_model = self.env['purchase.request.line']
 		cache = {}
