@@ -139,8 +139,6 @@ class ProductTemplateInherit(models.Model):
 	@api.onchange('item_ids')
 	def onchange_item_ids(self):
 
-
-
 		product_template_id = self.search([('name', '=', self.name)]).id
 
 		product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_template_id)]).id
@@ -201,9 +199,53 @@ class ProductTemplateInherit(models.Model):
 			#print('el producto ' + pack_line_ids[i].product_id.name + ' el valor ' + str(product_price) + ' la cantidad ' + str(pack_line_ids[i].quantity))
 		return product_price + self.calculate_list_price_pack(pack_line_ids, product_price, i=i-1)
 
+
+	@api.model
+	def update_all_product_price_list(self):
+
+		"""
+			Funcion que permite actualizar todos los productos con el precio de lista de tarifa publica
+		"""
+		product_ids = self.search([])
+
+		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
+
+
+
+
+		product_template_id = self.search([('name', '=', self.name)]).id
+		product_model = self.env['product.product']
+
+
+		for x in product_ids:
+			if x.pack == False:
+				if x.item_ids:
+					pass
+				else:
+					list_price = 0
+					val_price = pricelist_id.price_get(product_model.search([('product_tmpl_id', '=', x.id)]).id, 1, None)
+					print('el val_price es:')
+					print(val_price)
+					val_price_update = 0
+					for key in val_price:
+						val_price_update = val_price.get(key)
+						list_price= val_price_update
+					vals={
+					'pricelist_id': pricelist_id.id,
+					'update_price': True,
+					}
+
+					x.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
+
+
+
+
 	@api.model
 	def update_all_product_pack(self):
 
+		"""
+			Funcion que permite actualizar el precio de los paquetes de acuerdo a sus componentes
+		"""
 		product_pack_ids = self.search([('pack', '=', True)])
 
 		for x in product_pack_ids:
