@@ -30,3 +30,4 @@ from . import product_pack_line_inherit
 from . import stock_rule_inherit
 #from . import purchase_order_inherit
 from . import product_price_list_item_inherit
+from . import product_pricelist_inherit

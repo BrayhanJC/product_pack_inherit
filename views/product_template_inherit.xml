@@ -13,19 +13,6 @@
 
 
 
-		<record model="ir.ui.view" id="product_template_only_form_view">
-				<field name="name">product.template.pack.form</field>
-				<field name="model">product.template</field>
-				<field name="inherit_id" ref="product_pack.product_template_only_form_view" />
-				<field name="arch" type="xml">
-
-			<xpath expr="//field[@name='pack_line_ids']" position="before">
-				<button name="button_update_pack" string="Actualizar Precio" type="object" class="btn-primary" attrs="{'invisible': ['|', ('product_variant_count', '>', 1), ('pack', '=', False)]}"/>
-			</xpath>
-
-				</field>
-		</record>
-
 
 
 	<record id="product.product_template_form_view" model="ir.ui.view">
@@ -70,101 +57,101 @@
 										<notebook>
 												<page string="General Information" name="general_information">
 														<group>
-																<group name="group_general">
-																		<field name="type"/>
-																		<field name="categ_id" string="Product Category"/>
-																</group>
-																<group name="group_standard_price">
-																		<field name="list_price" string="Sales Price" widget='monetary' options="{'currency_field': 'currency_id', 'field_digits': True}"/>
-																		<label for="standard_price" groups="base.group_user" attrs="{'invisible': [('product_variant_count', '&gt;', 1), ('is_product_variant', '=', False)]}"/>
-																		<div name="standard_price_uom" groups="base.group_user" attrs="{'invisible': [('product_variant_count', '&gt;', 1), ('is_product_variant', '=', False)]}">
-																				<field name="standard_price" widget='monetary' options="{'currency_field': 'cost_currency_id'}"/>
-																		</div>
-																		<field name="company_id" groups="base.group_multi_company"
-																				options="{'no_create': True}"/>
-																		<field name="uom_id" groups="uom.group_uom" options="{'no_create': True}"/>
-																		<field name="uom_po_id" groups="uom.group_uom" options="{'no_create': True}"/>
-																		<field name="currency_id" invisible="1"/>
-																		<field name="cost_currency_id" invisible="1"/>
-																		<field name="product_variant_id" invisible="1"/>
-																</group>
-														</group>
-														<group string="Internal Notes">
-																<field name="description" nolabel="1" placeholder="This note is only for internal purposes."/>
-														</group>
-												</page>
-												<page string="Sales" attrs="{'invisible':[('sale_ok','=',False)]}" name="sales">
-														<group name="sale">
-																<group groups="product.group_product_pricelist" name="pricelists">
-																		<div name="pricelist_item" groups="product.group_product_pricelist">
-																				<separator string="Pricing"/>
-																				<field name="item_ids" nolabel="1" mode="tree,kanban" context="{'default_base':'list_price', 'default_applied_on' :'1_product'}">
-																						<tree string="Pricelist Items" editable="bottom">
-																								<field name="pricelist_id" string="Pricelist" required='1'/>
-																								<field name="currency_id" invisible="1"/>
-																								<field name="fixed_price" string="Price" required='1' widget='monetary' options="{'currency_field': 'currency_id'}"/>
-																								<field name="min_quantity"/>
-																								<field name="date_start"/>
-																								<field name="date_end"/>
-																							 
-																								<field name="update_price"/>
-																							
-																								<field name="applied_on" invisible="1"/>
-																						</tree>
-																						<kanban string="Pricelist Items" class="o_kanban_mobile">
-																							 <field name="pricelist_id"/>
-																							 <field name="currency_id"/>
-																							 <field name="fixed_price"/>
-																							 <field name="min_quantity"/>
-																							 <field name="date_start"/>
-																							 <field name="date_end"/>
-																							 <templates>
-																									 <t t-name="kanban-box">
-																											 <div t-attf-class="oe_kanban_global_click">
-																													 <div class="row">
-																															 <div class="col-12">
-																																	 <strong>
-																																			 <field name='pricelist_id'/>: <field name="fixed_price" widget='monetary' options="{'currency_field': 'currency_id'}"/>
-																																	 </strong>
-																															 </div>
-																													 </div>
-																													 <div class="row">
-																															 <div class="col-12">
-																																	 <span><t t-esc='record.min_quantity.string'/>: <t t-esc='record.min_quantity.value'/></span>
-																															 </div>
-																													 </div>
-																													 <span t-if='record.date_start.value || record.date_end.value'>
-																														<div class="row">
-																																<div class="col-12">
-																																		Valid <span t-if='record.date_start.value'> from <t t-esc='record.date_start.value'/></span><span t-if='record.date_end.value'> until <t t-esc='record.date_end.value'/></span>
-																																</div>
-																														</div>
-																													 </span>
-																											 </div>
-																									 </t>
-																							 </templates>
-																					 </kanban>
-																					 <form string="Pricelist Items">
-																							 <h1><field name="name"/></h1>
-																							 <group>
-																									 <group>
-																											 <field name="applied_on" invisible="1"/>
-																											 <field name="pricelist_id" string="Pricelist" required='1'/>
-																											 <field name="currency_id" invisible="1"/>
-																											 <field name="fixed_price" string="Price" required='1' widget='monetary' options="{'currency_field': 'currency_id'}"/>
-																									 </group>
-																									 <group>
-																											 <field name="min_quantity"/>
-																											 <field name="date_start"/>
-																											 <field name="date_end"/>
-																									 </group>
-																							 </group>
-																					 </form>
-																				</field>
-																		</div>
-																</group>
-																<group name="email_template_and_project" invisible="1"/>
-														</group>
+			<group name="group_general">
+					<field name="type"/>
+					<field name="categ_id" string="Product Category"/>
+			</group>
+			<group name="group_standard_price">
+					<field name="list_price" string="Sales Price" widget='monetary' options="{'currency_field': 'currency_id', 'field_digits': True}"/>
+					<label for="standard_price" groups="base.group_user" attrs="{'invisible': [('product_variant_count', '&gt;', 1), ('is_product_variant', '=', False)]}"/>
+					<div name="standard_price_uom" groups="base.group_user" attrs="{'invisible': [('product_variant_count', '&gt;', 1), ('is_product_variant', '=', False)]}">
+							<field name="standard_price" widget='monetary' options="{'currency_field': 'cost_currency_id'}"/>
+					</div>
+					<field name="company_id" groups="base.group_multi_company"
+							options="{'no_create': True}"/>
+					<field name="uom_id" groups="uom.group_uom" options="{'no_create': True}"/>
+					<field name="uom_po_id" groups="uom.group_uom" options="{'no_create': True}"/>
+					<field name="currency_id" invisible="1"/>
+					<field name="cost_currency_id" invisible="1"/>
+					<field name="product_variant_id" invisible="1"/>
+			</group>
+	</group>
+	<group string="Internal Notes">
+			<field name="description" nolabel="1" placeholder="This note is only for internal purposes."/>
+	</group>
+</page>
+<page string="Sales" attrs="{'invisible':[('sale_ok','=',False)]}" name="sales">
+	<group name="sale">
+			<group groups="product.group_product_pricelist" name="pricelists">
+					<div name="pricelist_item" groups="product.group_product_pricelist">
+							<separator string="Pricing" groups="product_pack_inherit.group_conf_show_listprice"/>
+							<field name="item_ids" nolabel="1" mode="tree,kanban" context="{'default_base':'list_price', 'default_applied_on' :'1_product'}" groups="product_pack_inherit.group_conf_show_listprice">
+									<tree string="Pricelist Items" editable="bottom">
+											<field name="pricelist_id" string="Pricelist" required='1'/>
+											<field name="currency_id" invisible="1"/>
+											<field name="fixed_price" string="Price" required='1' widget='monetary' options="{'currency_field': 'currency_id'}"/>
+											<field name="min_quantity"/>
+											<field name="date_start"/>
+											<field name="date_end"/>
+										 
+											<field name="update_price"/>
+										
+											<field name="applied_on" invisible="1"/>
+									</tree>
+									<kanban string="Pricelist Items" class="o_kanban_mobile">
+										 <field name="pricelist_id"/>
+										 <field name="currency_id"/>
+										 <field name="fixed_price"/>
+										 <field name="min_quantity"/>
+										 <field name="date_start"/>
+										 <field name="date_end"/>
+										 <templates>
+												 <t t-name="kanban-box">
+														 <div t-attf-class="oe_kanban_global_click">
+																 <div class="row">
+																		 <div class="col-12">
+																				 <strong>
+																						 <field name='pricelist_id'/>: <field name="fixed_price" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+																				 </strong>
+																		 </div>
+																 </div>
+																 <div class="row">
+																		 <div class="col-12">
+																				 <span><t t-esc='record.min_quantity.string'/>: <t t-esc='record.min_quantity.value'/></span>
+																		 </div>
+																 </div>
+																 <span t-if='record.date_start.value || record.date_end.value'>
+																	<div class="row">
+																			<div class="col-12">
+																					Valid <span t-if='record.date_start.value'> from <t t-esc='record.date_start.value'/></span><span t-if='record.date_end.value'> until <t t-esc='record.date_end.value'/></span>
+																			</div>
+																	</div>
+																 </span>
+														 </div>
+												 </t>
+										 </templates>
+								 </kanban>
+								 <form string="Pricelist Items">
+										 <h1><field name="name"/></h1>
+										 <group>
+												 <group>
+														 <field name="applied_on" invisible="1"/>
+														 <field name="pricelist_id" string="Pricelist" required='1'/>
+														 <field name="currency_id" invisible="1"/>
+														 <field name="fixed_price" string="Price" required='1' widget='monetary' options="{'currency_field': 'currency_id'}"/>
+												 </group>
+												 <group>
+														 <field name="min_quantity"/>
+														 <field name="date_start"/>
+														 <field name="date_end"/>
+												 </group>
+										 </group>
+								 </form>
+							</field>
+					</div>
+			</group>
+			<group name="email_template_and_project" invisible="1"/>
+	</group>
 														<group string="Description for Customers" name="description" invisible="1">
 																<field name="description_sale" nolabel="1" placeholder="This note will show up on sales orders &amp; invoices."/>
 														</group>
@@ -204,6 +191,23 @@
 										<field name="message_ids" widget="mail_thread"/>
 								</div>
 						</form>
+				</field>
+		</record>
+
+
+
+
+
+		<record model="ir.ui.view" id="product_template_only_form_view">
+				<field name="name">product.template.pack.form</field>
+				<field name="model">product.template</field>
+				<field name="inherit_id" ref="product_pack.product_template_only_form_view" />
+				<field name="arch" type="xml">
+
+				<xpath expr="//field[@name='pack_line_ids']" position="before">
+					<button name="button_update_pack" string="Actualizar Precio" type="object" class="btn-primary" attrs="{'invisible': ['|', ('product_variant_count', '>', 1), ('pack', '=', False)]}"/>
+				</xpath>
+
 				</field>
 		</record>
 

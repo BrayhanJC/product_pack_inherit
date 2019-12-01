@@ -39,5 +39,5 @@ class ProductPriceListItem(models.Model):
 
 	update_price = fields.Boolean(string="Actualizar Precio")
 
-	
+
 ProductPriceListItem()

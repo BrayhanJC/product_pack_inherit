@@ -26,6 +26,14 @@
 				-->
 			</xpath>
 
+
+			<xpath expr="//field[@name='order_line']" position="after">
+				
+				<button name="update_order_line_" string="Actualizar Packs" type="object" class="btn-primary"/>
+
+			</xpath>
+
+			
 			<field name="order_line" position="before">
 				<button name="update_order_line_" string="Actualizar Packs" type="object" class="btn-primary"/>
 				<br/>

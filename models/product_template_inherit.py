@@ -48,93 +48,6 @@ class ProductTemplateInherit(models.Model):
 				print(x.pricelist_id.name)
 				print(x.pricelist_id.price_get(product_id, 1, None))
 
-	"""
-	@api.multi
-	@api.onchange('product_id')
-	def product_id_change(self):
-		if not self.product_id:
-			return {'domain': {'product_uom': []}}
-
-		# remove the is_custom values that don't belong to this template
-		for pacv in self.product_custom_attribute_value_ids:
-			if pacv.attribute_value_id not in self.product_id.product_tmpl_id._get_valid_product_attribute_values():
-				self.product_custom_attribute_value_ids -= pacv
-
-		# remove the no_variant attributes that don't belong to this template
-		for ptav in self.product_no_variant_attribute_value_ids:
-			if ptav.product_attribute_value_id not in self.product_id.product_tmpl_id._get_valid_product_attribute_values():
-				self.product_no_variant_attribute_value_ids -= ptav
-
-		vals = {}
-		domain = {'product_uom': [('category_id', '=', self.product_id.uom_id.category_id.id)]}
-		if not self.product_uom or (self.product_id.uom_id.id != self.product_uom.id):
-			vals['product_uom'] = self.product_id.uom_id
-			vals['product_uom_qty'] = self.product_uom_qty or 1.0
-
-		product = self.with_context(
-			lang=self.order_id.partner_id.lang,
-			partner=self.order_id.partner_id,
-			quantity=vals.get('product_uom_qty') or self.product_uom_qty,
-			date=self.order_id.date_order,
-			pricelist=self.order_id.pricelist_id.id,
-			uom=self.product_uom.id
-		)
-
-		product = self.with_context(
-			lang=self.env.user.partner_id.lang,
-			partner=self.env.user.partner_id,
-			quantity=1,
-			date=fields.datetime.now(),
-			pricelist=self.item_ids.pricelist_id.id,
-			uom=self.uom_id.id
-		)
-
-		print(product)
-
-		list_price = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.env.user.company_id.id)
-
-
-
-		result = {'domain': domain}
-
-		name = self.get_sale_order_line_multiline_description_sale(product)
-
-		vals.update(name=name)
-
-		self._compute_tax_id()
-
-		if self.order_id.pricelist_id and self.order_id.partner_id:
-			vals['price_unit'] = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
-		
-		print('#############################################')
-		print(vals)
-		print(product)
-		print(self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id))
-		
-
-
-	@api.onchange('product_uom', 'product_uom_qty')
-	def product_uom_change(self):
-		if not self.product_uom or not self.product_id:
-			self.price_unit = 0.0
-			return
-		if self.order_id.pricelist_id and self.order_id.partner_id:
-			product = self.product_id.with_context(
-				lang=self.order_id.partner_id.lang,
-				partner=self.order_id.partner_id,
-				quantity=self.product_uom_qty,
-				date=self.order_id.date_order,
-				pricelist=self.order_id.pricelist_id.id,
-				uom=self.product_uom.id,
-				fiscal_position=self.env.context.get('fiscal_position')
-			)
-			print('...................................')
-			print(product)
-			print(self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id))
-			self.price_unit = self.env['account.tax']._fix_tax_included_price_company(self._get_display_price(product), product.taxes_id, self.tax_id, self.company_id)
-
-
-	"""
 
 	@api.onchange('item_ids')
 	def onchange_item_ids(self):
@@ -200,6 +113,58 @@ class ProductTemplateInherit(models.Model):
 		return product_price + self.calculate_list_price_pack(pack_line_ids, product_price, i=i-1)
 
 
+
+
+
+
+	@api.model
+	def update_product_pricelist_real_time(self):
+
+		"""
+			Funcion que permite actualizar todos los productos con el precio de lista de tarifa publica
+		"""
+		product_ids = self.search([])
+
+		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
+
+		product_template_id = self.search([('name', '=', self.name)]).id
+		product_model = self.env['product.product']
+
+		data_product_malo = []
+		for x in product_ids:
+			if x.pack == False:
+				print('vamos bien')
+				if x.item_ids:
+					
+					for value in x.item_ids:
+						print(value.pricelist_id.name + str(value.pricelist_id.id))
+						if value.pricelist_id.id == 1:
+							product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
+							_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
+							_logger.info(product_product_id)
+							_logger.info('El producto producto es: ' + str(product_product_id.id))
+							list_price = 0
+							val_price = 0
+							if product_product_id.id:
+								val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
+								print('el val_price es:')
+								print(val_price)
+								val_price_update = 0
+								for key in val_price:
+									val_price_update = val_price.get(key)
+									list_price= val_price_update
+								vals={
+								'pricelist_id': pricelist_id.id,
+								'update_price': True,
+								}
+
+								x.write({'list_price': list_price})
+
+				else:
+					pass
+
+
+
 	@api.model
 	def update_all_product_price_list(self):
 
@@ -210,32 +175,76 @@ class ProductTemplateInherit(models.Model):
 
 		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
 
-
-
-
 		product_template_id = self.search([('name', '=', self.name)]).id
 		product_model = self.env['product.product']
 
-
+		data_product_malo = []
 		for x in product_ids:
 			if x.pack == False:
+				print('vamos bien')
+				flag= False
 				if x.item_ids:
-					pass
-				else:
-					list_price = 0
-					val_price = pricelist_id.price_get(product_model.search([('product_tmpl_id', '=', x.id)]).id, 1, None)
-					print('el val_price es:')
-					print(val_price)
-					val_price_update = 0
-					for key in val_price:
-						val_price_update = val_price.get(key)
-						list_price= val_price_update
-					vals={
-					'pricelist_id': pricelist_id.id,
-					'update_price': True,
-					}
+					
+					for value in x.item_ids:
+						print(value.pricelist_id.name + str(value.pricelist_id.id))
+						if (value.pricelist_id.id == 1) and value.update_price:
+							if flag==False:
+								flag = True
+							
 
-					x.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
+				else:
+					if flag == False: 
+						product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
+						_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
+						_logger.info(product_product_id)
+						_logger.info('El producto producto es: ' + str(product_product_id.id))
+						list_price = 0
+						val_price = 0
+						if product_product_id.id:
+							val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
+							print('el val_price es:')
+							print(val_price)
+							val_price_update = 0
+							for key in val_price:
+								val_price_update = val_price.get(key)
+								list_price= val_price_update
+							vals={
+							'pricelist_id': pricelist_id.id,
+							'update_price': True,
+							}
+
+							x.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
+
+
+						else:
+							data_product_malo.append(x.id)
+					else:
+
+						product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
+						_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
+						_logger.info(product_product_id)
+						_logger.info('El producto producto es: ' + str(product_product_id.id))
+						list_price = 0
+						val_price = 0
+						if product_product_id.id:
+							val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
+							print('el val_price es:')
+							print(val_price)
+							val_price_update = 0
+							for key in val_price:
+								val_price_update = val_price.get(key)
+								list_price= val_price_update
+							vals={
+							'pricelist_id': pricelist_id.id,
+							'update_price': True,
+							}
+
+							x.write({'list_price': list_price})
+
+
+		_logger.info('Al final estos productos no estan buenos')
+		for x in self.search([('id', 'in', data_product_malo)]):
+			print(x.name)
 
 
 
@@ -272,4 +281,67 @@ class ProductTemplateInherit(models.Model):
 	def button_update_pack(self):
 		self.update_all_product_pack()
 
+
+	@api.model
+	def create(self, vals):
+
+		res = super(ProductTemplateInherit, self).create(vals)
+		product_model = self.env['product.product']
+
+		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
+		product_product_id = product_model.search([('product_tmpl_id', '=', res.id)])
+
+		list_price = 0
+		val_price = 0
+		if product_product_id.id:
+			val_price = pricelist_id.price_get(product_product_id.id, 1, None)
+
+			val_price_update = 0
+			for key in val_price:
+				val_price_update = val_price.get(key)
+				list_price= val_price_update
+			vals={
+			'pricelist_id': pricelist_id.id,
+			'update_price': True,
+			}
+
+			res.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
+
+
+		#self.update_all_product_pack()
+
+		return res
+
+	def write(self, vals):
+
+		product_model = self.env['product.product']
+
+		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
+		product_product_id = product_model.search([('product_tmpl_id', '=', self.id)])
+
+		list_price = 0
+		val_price = 0
+		if product_product_id.id:
+			val_price = pricelist_id.price_get(product_product_id.id, 1, None)
+
+			print('poraca')
+
+			val_price_update = 0
+			for key in val_price:
+				val_price_update = val_price.get(key)
+				print(val_price_update)
+				list_price= val_price_update
+
+
+		vals['list_price']= list_price
+
+		print(list_price)
+
+
+		res= super(ProductTemplateInherit,self).write(vals)
+
+		print('estamos entrando')
+		print(res)
+
+		return res
 ProductTemplateInherit()

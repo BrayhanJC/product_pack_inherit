@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    
+#
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
 #
@@ -18,34 +18,43 @@
 #    Correo: brayhanjaramillo@hotmail.com
 #
 #    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.     
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
-{
-    'name': 'Product Pack Inherit',
-    'version': '12.0',
-    'category': 'Product',
-    'sequence': 14,
-    'summary': '',
-    'author': 'Brayhan Jaramillo',
-    'license': 'AGPL-3',
-    'images': [
-    ],
-    'depends': [
-        'product_pack', 'sale', 'set_sequence_number', 'surcharge_value', 'purchase_request', 'quick_purchase_order_from_sale_order'
-    ],
-    'data': [
-        'security/ir.model.access.csv',
-        'security/security.xml',
-        'report/pack_report.xml',
-        'report/report.xml',
-        'views/sale_order_inherit.xml',
-        'views/sale_order_pack_aux_view.xml',
-        'views/product_template_inherit.xml'
-    ],
+from odoo import api, fields, models, _
+import time
+from datetime import datetime, timedelta, date
+import logging
+_logger = logging.getLogger(__name__)
+from odoo import modules
+from math import sqrt
+import statistics as stats
+import math
 
-    'installable': True,
-    'auto_install': False,
-    'application': False,
-}
+class ProductPriceListInherit(models.Model):
+
+	_inherit = 'product.pricelist'
+
+
+	def update_product_price(self):
+		pass
+
+
+	@api.model
+	def create(self, vals):
+
+		res = super(ProductPriceListInherit, self).create(vals)
+
+		return res
+
+	def write(self, vals):
+
+		res= super(ProductPriceListInherit,self).write(vals)
+
+		model_product_template= self.env['product.template']
+		model_product_template.update_all_product_price_list()
+		model_product_template.update_all_product_pack()
+
+		return res
+ProductPriceListInherit()
