@@ -41,20 +41,5 @@ class ProductPriceListInherit(models.Model):
 		pass
 
 
-	@api.model
-	def create(self, vals):
 
-		res = super(ProductPriceListInherit, self).create(vals)
-
-		return res
-
-	def write(self, vals):
-
-		res= super(ProductPriceListInherit,self).write(vals)
-
-		model_product_template= self.env['product.template']
-		model_product_template.update_all_product_price_list()
-		model_product_template.update_all_product_pack()
-
-		return res
 ProductPriceListInherit()

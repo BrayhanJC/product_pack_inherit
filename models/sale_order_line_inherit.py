@@ -387,4 +387,20 @@ class SaleOrderInherit(models.Model):
 						existing_subline.write(vals)
 					elif not do_not_expand:
 						self.create(vals)
+
+
+
+	@api.model
+	def create(self, vals):
+
+		if self.env['product.product'].search([('id', '=', vals['product_id'])]).pack:
+			vals['is_pack'] = True
+		else:
+			vals['is_pack'] = False
+
+
+		res = super(SaleOrderInherit, self).create(vals)
+
+		return res
+
 SaleOrderInherit()

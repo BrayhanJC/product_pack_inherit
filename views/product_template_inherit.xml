@@ -3,16 +3,13 @@
 <odoo>
 
 	<data>
-		<function model="product.template" name="update_all_product_pack"/>
-	</data>
-
-
-	<data>
 		<function model="product.template" name="update_all_product_price_list"/>
 	</data>
 
 
-
+	<data>
+		<function model="product.template" name="update_all_product_pack"/>
+	</data>
 
 
 	<record id="product.product_template_form_view" model="ir.ui.view">

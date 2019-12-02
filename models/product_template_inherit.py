@@ -109,7 +109,7 @@ class ProductTemplateInherit(models.Model):
 
 		else:
 			product_price = (pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) + ( (pack_line_ids[i].product_id.list_price * pack_line_ids[i].quantity) * (pack_line_ids[i].discount/100) )
-			#print('el producto ' + pack_line_ids[i].product_id.name + ' el valor ' + str(product_price) + ' la cantidad ' + str(pack_line_ids[i].quantity))
+			print('el producto ' + pack_line_ids[i].product_id.name + ' el valor ' + str(product_price) + ' la cantidad ' + str(pack_line_ids[i].quantity))
 		return product_price + self.calculate_list_price_pack(pack_line_ids, product_price, i=i-1)
 
 
@@ -188,58 +188,58 @@ class ProductTemplateInherit(models.Model):
 					for value in x.item_ids:
 						print(value.pricelist_id.name + str(value.pricelist_id.id))
 						if (value.pricelist_id.id == 1) and value.update_price:
-							if flag==False:
-								flag = True
-							
+
+
+							product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
+							_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
+							_logger.info(product_product_id)
+							_logger.info('El producto producto es: ' + str(product_product_id.id))
+							list_price = 0
+							val_price = 0
+							if product_product_id.id:
+								val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
+								print('el val_price es:')
+								print(val_price)
+								val_price_update = 0
+								for key in val_price:
+									val_price_update = val_price.get(key)
+									list_price= val_price_update
+								vals={
+								'pricelist_id': pricelist_id.id,
+								'update_price': True,
+								}
+
+								x.write({'list_price': list_price})
 
 				else:
-					if flag == False: 
-						product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
-						_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
-						_logger.info(product_product_id)
-						_logger.info('El producto producto es: ' + str(product_product_id.id))
-						list_price = 0
-						val_price = 0
-						if product_product_id.id:
-							val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
-							print('el val_price es:')
-							print(val_price)
-							val_price_update = 0
-							for key in val_price:
-								val_price_update = val_price.get(key)
-								list_price= val_price_update
-							vals={
-							'pricelist_id': pricelist_id.id,
-							'update_price': True,
-							}
 
-							x.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
+					product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
+					_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
+					_logger.info(product_product_id)
+					_logger.info('El producto producto es: ' + str(product_product_id.id))
+					list_price = 0
+					val_price = 0
+					if product_product_id.id:
+						val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
+						print('el val_price es:')
+						print(val_price)
+						val_price_update = 0
+						for key in val_price:
+							val_price_update = val_price.get(key)
+							list_price= val_price_update
+						vals={
+						'pricelist_id': pricelist_id.id,
+						'update_price': True,
+						}
+
+						x.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
 
 
-						else:
-							data_product_malo.append(x.id)
 					else:
+						data_product_malo.append(x.id)
+		
 
-						product_product_id = product_model.search([('product_tmpl_id', '=', x.id)])
-						_logger.info('El producto template es: ' + str(x.name) + ' con id: ' + str(x.id))
-						_logger.info(product_product_id)
-						_logger.info('El producto producto es: ' + str(product_product_id.id))
-						list_price = 0
-						val_price = 0
-						if product_product_id.id:
-							val_price = pricelist_id.price_get(product_product_id.id or x.id, 1, None)
-							print('el val_price es:')
-							print(val_price)
-							val_price_update = 0
-							for key in val_price:
-								val_price_update = val_price.get(key)
-								list_price= val_price_update
-							vals={
-							'pricelist_id': pricelist_id.id,
-							'update_price': True,
-							}
 
-							x.write({'list_price': list_price})
 
 
 		_logger.info('Al final estos productos no estan buenos')
@@ -262,7 +262,8 @@ class ProductTemplateInherit(models.Model):
 
 				list_price = 0
 				list_price = self.calculate_list_price_pack(x.pack_line_ids, 0, len(x.pack_line_ids)-1)
-				x.write({'list_price': list_price})
+				print('el precio seria:' + str(list_price))
+				x.sudo().write({'list_price': list_price})
 
 
 	@api.multi
@@ -312,36 +313,4 @@ class ProductTemplateInherit(models.Model):
 
 		return res
 
-	def write(self, vals):
-
-		product_model = self.env['product.product']
-
-		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
-		product_product_id = product_model.search([('product_tmpl_id', '=', self.id)])
-
-		list_price = 0
-		val_price = 0
-		if product_product_id.id:
-			val_price = pricelist_id.price_get(product_product_id.id, 1, None)
-
-			print('poraca')
-
-			val_price_update = 0
-			for key in val_price:
-				val_price_update = val_price.get(key)
-				print(val_price_update)
-				list_price= val_price_update
-
-
-		vals['list_price']= list_price
-
-		print(list_price)
-
-
-		res= super(ProductTemplateInherit,self).write(vals)
-
-		print('estamos entrando')
-		print(res)
-
-		return res
 ProductTemplateInherit()

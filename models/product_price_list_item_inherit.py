@@ -40,4 +40,20 @@ class ProductPriceListItem(models.Model):
 	update_price = fields.Boolean(string="Actualizar Precio")
 
 
+	@api.model
+	def create(self, vals):
+
+		res = super(ProductPriceListItem, self).create(vals)
+
+		return res
+
+	def write(self, vals):
+
+		res= super(ProductPriceListItem,self).write(vals)
+
+		model_product_template= self.env['product.template']
+		model_product_template.update_all_product_price_list()
+		model_product_template.update_all_product_pack()
+
+		return res
 ProductPriceListItem()
