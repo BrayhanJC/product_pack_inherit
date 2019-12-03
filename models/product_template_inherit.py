@@ -286,34 +286,5 @@ class ProductTemplateInherit(models.Model):
 		#self.update_all_product_pack()
 
 
-	@api.model
-	def create(self, vals):
-
-		res = super(ProductTemplateInherit, self).create(vals)
-		product_model = self.env['product.product']
-
-		pricelist_id = self.env['product.pricelist'].search([('id', '=', 1)])
-		product_product_id = product_model.search([('product_tmpl_id', '=', res.id)])
-
-		list_price = 0
-		val_price = 0
-		if product_product_id.id:
-			val_price = pricelist_id.price_get(product_product_id.id, 1, None)
-
-			val_price_update = 0
-			for key in val_price:
-				val_price_update = val_price.get(key)
-				list_price= val_price_update
-			vals={
-			'pricelist_id': pricelist_id.id,
-			'update_price': True,
-			}
-
-			res.write({'item_ids': [(0, 0, vals)], 'list_price': list_price})
-
-
-		#self.update_all_product_pack()
-
-		return res
 
 ProductTemplateInherit()
