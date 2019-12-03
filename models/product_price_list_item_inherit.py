@@ -52,8 +52,8 @@ class ProductPriceListItem(models.Model):
 		res= super(ProductPriceListItem,self).write(vals)
 
 		model_product_template= self.env['product.template']
-		model_product_template.update_all_product_price_list()
-		model_product_template.update_all_product_pack()
+#		model_product_template.update_all_product_price_list()
+#		model_product_template.update_all_product_pack()
 
 		return res
 ProductPriceListItem()

@@ -269,18 +269,21 @@ class ProductTemplateInherit(models.Model):
 	@api.multi
 	@api.onchange('pack_line_ids')
 	def onchange_pack_line(self):
-
+		pass
+		"""
 		if self.pack_line_ids:
 			list_price = 0
 			list_price = self.calculate_list_price_pack(self.pack_line_ids, 0, len(self.pack_line_ids)-1)
 
 			for x in self:
 				x.list_price = list_price
+		"""
 
 
 	@api.multi
 	def button_update_pack(self):
-		self.update_all_product_pack()
+		pass
+		#self.update_all_product_pack()
 
 
 	@api.model

@@ -2,6 +2,8 @@
 
 <odoo>
 
+	<!--
+
 	<data>
 		<function model="product.template" name="update_all_product_price_list"/>
 	</data>
@@ -11,7 +13,7 @@
 		<function model="product.template" name="update_all_product_pack"/>
 	</data>
 
-
+-->
 	<record id="product.product_template_form_view" model="ir.ui.view">
 				<field name="name">product.template.common.form</field>
 				<field name="model">product.template</field>
@@ -91,7 +93,6 @@
 											<field name="date_start"/>
 											<field name="date_end"/>
 										 
-											<field name="update_price"/>
 										
 											<field name="applied_on" invisible="1"/>
 									</tree>
